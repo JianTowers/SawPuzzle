@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * @Description: TODO
+ * @Description:
  * @Author: Jian
  * @Date: 2023/6/21
  **/
@@ -39,7 +39,6 @@ public class ImageUtils {
             for (int j = 0; j < piece; j++) {
                 ImageBlock imageBlock = new ImageBlock();
                 imageBlock.setOriginal(i * piece + j);
-                imageBlock.setNow(i * piece + j);
                 int xValue = j * pieceWidth;
                 int yValue = i * pieceWidth;
 

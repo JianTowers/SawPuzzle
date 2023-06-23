@@ -34,7 +34,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         Bitmap bitmap = ImageUtils.getBitmap(this, R.mipmap.test);
-        lists = ImageUtils.split(this, bitmap, 3);
+        lists = ImageUtils.split(this, bitmap, 6);
 
         initAdapter();
         imageAdapter.updateData(lists);
@@ -42,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initAdapter(){
         imageAdapter = new ImageAdapter();
-        binding.recycler.setLayoutManager(new GridLayoutManager(this, 3));
+        binding.recycler.setLayoutManager(new GridLayoutManager(this, 6));
         binding.recycler.setAdapter(imageAdapter);
 
         binding.recycler.addItemDecoration(new RecyclerView.ItemDecoration() {
