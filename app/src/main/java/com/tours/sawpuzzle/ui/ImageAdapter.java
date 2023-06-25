@@ -29,6 +29,12 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageItem> {
     private int imageSize;
     private int imageSide;
 
+    private ImageListener imageListener;
+
+    public ImageAdapter(ImageListener imageListener) {
+        this.imageListener = imageListener;
+    }
+
     @NonNull
     @Override
     public ImageItem onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -43,6 +49,9 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageItem> {
         holder.image.setImageBitmap(item.getBitmap());
         holder.image.setOnClickListener(view -> {
             swapImage(item);
+            if (isPuzzle() && imageListener != null){
+                imageListener.puzzleFinish();
+            }
         });
     }
 
@@ -106,6 +115,18 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageItem> {
             }
         }
         return null;
+    }
+
+    /**
+     * 判断拼图完成
+     */
+    private boolean isPuzzle() {
+        for (int i = 0; i < datas.size(); i++) {
+            if (i != datas.get(i).getOriginal()) {
+                return false;
+            }
+        }
+        return true;
     }
 
 

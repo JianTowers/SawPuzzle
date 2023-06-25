@@ -9,6 +9,7 @@ import com.tours.sawpuzzle.R;
 import com.tours.sawpuzzle.data.ImageBlock;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -26,31 +27,27 @@ public class ImageUtils {
      * @return
      */
     public static List<ImageBlock> split(Context context, Bitmap bitmap, int piece) {
-
         List<ImageBlock> images = new ArrayList<ImageBlock>(piece * piece);
-
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
-
-        Log.e("TAG", "bitmap Width = " + width + " , height = " + height);
         int pieceWidth = Math.min(width, height) / piece;
-
         for (int i = 0; i < piece; i++) {
             for (int j = 0; j < piece; j++) {
                 ImageBlock imageBlock = new ImageBlock();
                 imageBlock.setOriginal(i * piece + j);
                 int xValue = j * pieceWidth;
                 int yValue = i * pieceWidth;
-
                 if (i == piece - 1 && j == piece - 1) {
-                    imageBlock.setBitmap(getBitmap(context, R.mipmap.empty));
+                    imageBlock.setBitmap(null);
                 } else {
                     imageBlock.setBitmap(Bitmap.createBitmap(bitmap, xValue, yValue, pieceWidth, pieceWidth));
                 }
-
                 images.add(imageBlock);
             }
         }
+
+        //随机打乱图片
+        Collections.shuffle(images);
         return images;
     }
 
