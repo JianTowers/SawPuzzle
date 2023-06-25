@@ -1,4 +1,4 @@
-package com.tours.sawpuzzle.ui;
+package com.tours.sawpuzzle.ui.main;
 
 import android.annotation.SuppressLint;
 import android.os.Build;

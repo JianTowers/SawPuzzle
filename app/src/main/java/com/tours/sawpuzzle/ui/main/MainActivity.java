@@ -1,4 +1,4 @@
-package com.tours.sawpuzzle;
+package com.tours.sawpuzzle.ui.main;
 
 import android.graphics.Bitmap;
 import android.graphics.Rect;
@@ -11,10 +11,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.tours.sawpuzzle.R;
 import com.tours.sawpuzzle.data.ImageBlock;
 import com.tours.sawpuzzle.databinding.ActivityMainBinding;
-import com.tours.sawpuzzle.ui.ImageAdapter;
-import com.tours.sawpuzzle.ui.ImageListener;
 import com.tours.sawpuzzle.utils.ImageUtils;
 
 import java.util.ArrayList;
@@ -53,10 +52,16 @@ public class MainActivity extends AppCompatActivity implements ImageListener {
         });
     }
 
-    private void updateAdapter(){
-        Bitmap bitmap = ImageUtils.getBitmap(this, R.mipmap.test);
-        lists = ImageUtils.split(this, bitmap, SIDE);
-        imageAdapter.updateData(lists);
+    private void updateAdapter() {
+        new Thread(() -> {
+            Bitmap init = ImageUtils.getBitmap(this, R.mipmap.test);
+            Bitmap crop = ImageUtils.getSquare(init);
+            lists = ImageUtils.split(crop, SIDE);
+            binding.recycler.post(() -> {
+                binding.image.setImageBitmap(crop);
+                imageAdapter.updateData(lists);
+            });
+        }).start();
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.tours.sawpuzzle.ui;
+package com.tours.sawpuzzle.ui.main;
 
 public interface ImageListener {
     void puzzleFinish();

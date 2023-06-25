@@ -3,9 +3,7 @@ package com.tours.sawpuzzle.utils;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.util.Log;
 
-import com.tours.sawpuzzle.R;
 import com.tours.sawpuzzle.data.ImageBlock;
 
 import java.util.ArrayList;
@@ -26,7 +24,7 @@ public class ImageUtils {
      * @param piece
      * @return
      */
-    public static List<ImageBlock> split(Context context, Bitmap bitmap, int piece) {
+    public static List<ImageBlock> split(Bitmap bitmap, int piece) {
         List<ImageBlock> images = new ArrayList<ImageBlock>(piece * piece);
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
@@ -49,6 +47,16 @@ public class ImageUtils {
         //随机打乱图片
         Collections.shuffle(images);
         return images;
+    }
+
+    /**
+     * 获取图片正方形
+     */
+    public static Bitmap getSquare(Bitmap bitmap) {
+        int width = bitmap.getWidth();
+        int height = bitmap.getHeight();
+        int pieceWidth = Math.min(width, height);
+        return Bitmap.createBitmap(bitmap, 0, 0, pieceWidth, pieceWidth);
     }
 
     public static Bitmap getBitmap(Context context, int resourcesId) {
