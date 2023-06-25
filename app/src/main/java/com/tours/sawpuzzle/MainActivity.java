@@ -36,9 +36,7 @@ public class MainActivity extends AppCompatActivity implements ImageListener {
         setContentView(binding.getRoot());
 
         initAdapter();
-        Bitmap bitmap = ImageUtils.getBitmap(this, R.mipmap.test);
-        lists = ImageUtils.split(this, bitmap, SIDE);
-        imageAdapter.updateData(lists);
+        updateAdapter();
     }
 
     private void initAdapter() {
@@ -53,6 +51,12 @@ public class MainActivity extends AppCompatActivity implements ImageListener {
                 outRect.set(2, 2, 2, 2);
             }
         });
+    }
+
+    private void updateAdapter(){
+        Bitmap bitmap = ImageUtils.getBitmap(this, R.mipmap.test);
+        lists = ImageUtils.split(this, bitmap, SIDE);
+        imageAdapter.updateData(lists);
     }
 
     @Override

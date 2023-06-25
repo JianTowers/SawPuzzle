@@ -49,7 +49,7 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageItem> {
         holder.image.setImageBitmap(item.getBitmap());
         holder.image.setOnClickListener(view -> {
             swapImage(item);
-            if (isPuzzle() && imageListener != null){
+            if (isPuzzle() && imageListener != null) {
                 imageListener.puzzleFinish();
             }
         });
@@ -73,8 +73,20 @@ public class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImageItem> {
             return;
         }
 
-        //所在图片与空白图片绝对值为1或者为imageSide
+        int emptyP = getEmptyPosition();
+        int nowP = getNormalPosition(item);
         int distance = Math.abs(getEmptyPosition() - getNormalPosition(item));
+
+        //空白块处于左边缘时，上一排最后一个无法直接交换
+        if (emptyP % imageSide == 0 && emptyP - nowP == 1) {
+            return;
+        }
+        //空白块处于右边缘时，下一排第一个无法直接交换
+        if ((emptyP + 1) % imageSide == 0 && nowP - emptyP == 1) {
+            return;
+        }
+
+        //最后距离绝对值为1或者为side可进行交换
         if (distance == 1 || distance == imageSide) {
             Collections.swap(datas, getEmptyPosition(), getNormalPosition(item));
             notifyDataSetChanged();
