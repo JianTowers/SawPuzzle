@@ -6,7 +6,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.tours.sawpuzzle.databinding.ActivityWeclomeBinding;
-import com.tours.sawpuzzle.ui.main.MainActivity;
+import com.tours.sawpuzzle.ui.image.ImageActivity;
 
 /**
  * @author Administrator
@@ -21,6 +21,6 @@ public class WelcomeActivity extends AppCompatActivity {
         binding = ActivityWeclomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        binding.startGame.setOnClickListener(view -> startActivity(new Intent(this, MainActivity.class)));
+        binding.startGame.setOnClickListener(view -> startActivity(new Intent(this, ImageActivity.class)));
     }
 }
