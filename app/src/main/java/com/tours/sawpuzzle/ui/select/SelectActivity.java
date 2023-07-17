@@ -5,17 +5,15 @@ import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.tours.sawpuzzle.R;
 import com.tours.sawpuzzle.databinding.ActivitySelectBinding;
@@ -49,6 +47,15 @@ public class SelectActivity extends AppCompatActivity {
             image();
         }).start();
         PermissionsUtils.requestRequiredPermissions(this, permissions);
+
+        binding.confirm.setOnClickListener(view -> {
+            String item = selectAdapter.getImage();
+            if (item == null || TextUtils.isEmpty(item)) {
+                Toast.makeText(this, getString(R.string.not_select), Toast.LENGTH_SHORT).show();
+            } else {
+                Log.e(TAG, "onCreate: " + item);
+            }
+        });
     }
 
     private void image() {

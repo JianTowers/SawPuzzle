@@ -4,4 +4,6 @@
     <string name="start_game">开始游戏</string>
 
     <string name="select_image">选择图片</string>
+    <string name="confirm">确定</string>
+    <string name="not_select">未选择图片，请选择一张图片</string>
 </resources>

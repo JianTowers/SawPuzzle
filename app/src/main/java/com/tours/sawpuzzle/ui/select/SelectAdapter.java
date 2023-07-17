@@ -1,6 +1,8 @@
 package com.tours.sawpuzzle.ui.select;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,12 +24,11 @@ import java.util.List;
  **/
 public class SelectAdapter extends RecyclerView.Adapter<SelectAdapter.ImageItem> {
 
-    private static final String TAG = "ImageAdapter";
+    private static final String TAG = "SelectAdapter";
     private List<String> datas;
 
-
-    public SelectAdapter() {
-    }
+    //为-1时，没有选中任何一张图片
+    private int selectPosition = -1;
 
     @NonNull
     @Override
@@ -39,9 +40,50 @@ public class SelectAdapter extends RecyclerView.Adapter<SelectAdapter.ImageItem>
 
     @RequiresApi(api = Build.VERSION_CODES.N)
     @Override
-    public void onBindViewHolder(@NonNull ImageItem holder, int position) {
+    public void onBindViewHolder(@NonNull ImageItem holder, @SuppressLint("RecyclerView") int position) {
         String item = datas.get(position);
         CacheUtils.getInstance().load(holder.image.getContext(), item, holder.image);
+        //只刷新选中图标
+        if (selectPosition == position) {
+            holder.select.setImageResource(R.drawable.ic_select);
+        } else {
+            holder.select.setImageResource(R.drawable.ic_unselect);
+        }
+        holder.image.setOnClickListener(view -> {
+            int lastPosition = -1;
+            if (selectPosition != -1) {
+                lastPosition = selectPosition;
+            }
+
+            if (selectPosition != position) {
+                selectPosition = position;
+            } else {
+                selectPosition = -1;
+            }
+
+            if (lastPosition != -1) {
+                notifyItemChanged(lastPosition, item);
+            }
+            if (selectPosition != -1) {
+                notifyItemChanged(selectPosition, item);
+            }
+        });
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    @Override
+    public void onBindViewHolder(@NonNull ImageItem holder, @SuppressLint("RecyclerView") int position, @NonNull List<Object> payloads) {
+        super.onBindViewHolder(holder, position, payloads);
+        if (payloads.isEmpty()) {
+            onBindViewHolder(holder, position);
+            return;
+        }
+        //只刷新选中图标
+        if (selectPosition == position) {
+            holder.select.setImageResource(R.drawable.ic_select);
+        } else {
+            holder.select.setImageResource(R.drawable.ic_unselect);
+        }
     }
 
     @Override
@@ -57,17 +99,22 @@ public class SelectAdapter extends RecyclerView.Adapter<SelectAdapter.ImageItem>
         notifyDataSetChanged();
     }
 
+    public String getImage(){
+        if (selectPosition == -1){
+            return null;
+        }
+        return datas.get(selectPosition);
+    }
+
 
     public static class ImageItem extends RecyclerView.ViewHolder {
         private ImageView image;
-
-        public ImageView getImage() {
-            return image;
-        }
+        private ImageView select;
 
         public ImageItem(@NonNull View itemView) {
             super(itemView);
             image = itemView.findViewById(R.id.image);
+            select = itemView.findViewById(R.id.select);
         }
     }
 }
