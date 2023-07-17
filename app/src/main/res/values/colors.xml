@@ -9,4 +9,9 @@
     <color name="white">#FFFFFFFF</color>
 
     <color name="themeColor">#96B97D</color>
+    <color name="cutColor">#4F4F4F</color>
+
+    <color name="blue">#FF2A82E4</color>
+    <color name="gray">#FF383838</color>
+    <color name="red">#FFD43030</color>
 </resources>

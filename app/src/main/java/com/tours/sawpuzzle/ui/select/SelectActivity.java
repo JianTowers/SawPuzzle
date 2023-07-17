@@ -1,30 +1,37 @@
-package com.tours.sawpuzzle.ui.image;
+package com.tours.sawpuzzle.ui.select;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-import com.tours.sawpuzzle.databinding.ActivityImageBinding;
+import com.tours.sawpuzzle.R;
+import com.tours.sawpuzzle.databinding.ActivitySelectBinding;
+import com.tours.sawpuzzle.ui.widget.GridDecoration;
 import com.tours.sawpuzzle.utils.PermissionsUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImageActivity extends AppCompatActivity {
+public class SelectActivity extends AppCompatActivity {
 
     private static final String TAG = "ImageActivity";
 
-    private ActivityImageBinding binding;
+    private ActivitySelectBinding binding;
 
+    private SelectAdapter selectAdapter;
     private String[] permissions = new String[]{
             Manifest.permission.READ_EXTERNAL_STORAGE,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
@@ -33,16 +40,22 @@ public class ImageActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        binding = ActivityImageBinding.inflate(getLayoutInflater());
+        binding = ActivitySelectBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        init();
+        Log.e(TAG, "onCreate: FF");
+        new Thread(() -> {
+            image();
+        }).start();
         PermissionsUtils.requestRequiredPermissions(this, permissions);
     }
 
     private void image() {
+        Log.e(TAG, "image: ");
         Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 null, null, null, null);
-        List<Bitmap> list = new ArrayList<>();
+        List<String> list = new ArrayList<>();
         while (cursor.moveToNext()) {
             //获取图片的路径
             @SuppressLint("Range") byte[] data = cursor.getBlob(cursor.getColumnIndex(MediaStore.Images.Media.DATA));
@@ -50,9 +63,26 @@ public class ImageActivity extends AppCompatActivity {
             //根据路径获取图片
             Bitmap bm = BitmapFactory.decodeFile(location);
             //获取图片的详细信息
-            list.add(bm);
+            list.add(location);
+            if (list.size() > 50) {
+                break;
+            }
         }
         Log.e(TAG, "image: " + list.size());
+
+        binding.recycler.post(() -> {
+            selectAdapter.updateData(list);
+        });
+    }
+
+    private void init() {
+        binding.layoutTitle.title.setText(getString(R.string.select_image));
+        binding.layoutTitle.ivBack.setOnClickListener(view -> finish());
+
+        selectAdapter = new SelectAdapter();
+        binding.recycler.setLayoutManager(new GridLayoutManager(this, 3));
+        binding.recycler.setAdapter(selectAdapter);
+        binding.recycler.addItemDecoration(new GridDecoration(5));
     }
 
 
