@@ -1,5 +1,6 @@
 package com.tours.sawpuzzle.ui.main;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.os.Bundle;
@@ -34,8 +35,10 @@ public class MainActivity extends AppCompatActivity implements ImageListener {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        Intent intent = this.getIntent();
+        String path = intent.getStringExtra("select");
         initAdapter();
-        updateAdapter();
+        updateAdapter(path);
     }
 
     private void initAdapter() {
@@ -52,9 +55,9 @@ public class MainActivity extends AppCompatActivity implements ImageListener {
         });
     }
 
-    private void updateAdapter() {
+    private void updateAdapter(String path) {
         new Thread(() -> {
-            Bitmap init = ImageUtils.getBitmap(this, R.mipmap.test);
+            Bitmap init = ImageUtils.getBitmap(path);
             Bitmap crop = ImageUtils.getSquare(init);
             lists = ImageUtils.split(crop, SIDE);
             binding.recycler.post(() -> {

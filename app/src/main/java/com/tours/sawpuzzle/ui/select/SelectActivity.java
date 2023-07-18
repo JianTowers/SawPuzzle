@@ -2,6 +2,7 @@ package com.tours.sawpuzzle.ui.select;
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,6 +18,7 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.tours.sawpuzzle.R;
 import com.tours.sawpuzzle.databinding.ActivitySelectBinding;
+import com.tours.sawpuzzle.ui.main.MainActivity;
 import com.tours.sawpuzzle.ui.widget.GridDecoration;
 import com.tours.sawpuzzle.utils.PermissionsUtils;
 
@@ -41,25 +43,23 @@ public class SelectActivity extends AppCompatActivity {
         binding = ActivitySelectBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        init();
-        Log.e(TAG, "onCreate: FF");
-        new Thread(() -> {
-            image();
-        }).start();
-        PermissionsUtils.requestRequiredPermissions(this, permissions);
-
         binding.confirm.setOnClickListener(view -> {
             String item = selectAdapter.getImage();
             if (item == null || TextUtils.isEmpty(item)) {
                 Toast.makeText(this, getString(R.string.not_select), Toast.LENGTH_SHORT).show();
             } else {
-                Log.e(TAG, "onCreate: " + item);
+                Intent intent = new Intent(SelectActivity.this, MainActivity.class);
+                intent.putExtra("select",item);
+                startActivity(intent);
+                finish();
             }
         });
+
+        init();
+        PermissionsUtils.requestRequiredPermissions(this, permissions);
     }
 
-    private void image() {
-        Log.e(TAG, "image: ");
+    private void addImage() {
         Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
                 null, null, null, null);
         List<String> list = new ArrayList<>();
@@ -75,7 +75,6 @@ public class SelectActivity extends AppCompatActivity {
                 break;
             }
         }
-        Log.e(TAG, "image: " + list.size());
 
         binding.recycler.post(() -> {
             selectAdapter.updateData(list);
@@ -100,9 +99,7 @@ public class SelectActivity extends AppCompatActivity {
             if (!it) {
                 Toast.makeText(this, "权限获取失败", Toast.LENGTH_SHORT).show();
             } else {
-                new Thread(() -> {
-                    image();
-                }).start();
+                new Thread(this::addImage).start();
             }
         }));
     }

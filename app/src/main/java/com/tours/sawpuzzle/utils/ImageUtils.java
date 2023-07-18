@@ -62,4 +62,8 @@ public class ImageUtils {
     public static Bitmap getBitmap(Context context, int resourcesId) {
         return BitmapFactory.decodeResource(context.getResources(), resourcesId);
     }
+
+    public static Bitmap getBitmap(String path) {
+        return BitmapFactory.decodeFile(path);
+    }
 }
