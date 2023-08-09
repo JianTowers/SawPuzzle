@@ -42,4 +42,6 @@ dependencies {
 
     // Android 屏幕适配方案
     implementation 'me.jessyan:autosize:1.2.1'
+
+    implementation 'com.google.code.gson:gson:2.8.5'
 }

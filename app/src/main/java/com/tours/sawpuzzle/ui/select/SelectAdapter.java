@@ -2,7 +2,6 @@ package com.tours.sawpuzzle.ui.select;
 
 import android.annotation.SuppressLint;
 import android.os.Build;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,7 +12,7 @@ import androidx.annotation.RequiresApi;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.tours.sawpuzzle.R;
-import com.tours.sawpuzzle.utils.CacheUtils;
+import com.tours.sawpuzzle.utils.cache.CacheUtils;
 
 import java.util.List;
 
@@ -42,7 +41,7 @@ public class SelectAdapter extends RecyclerView.Adapter<SelectAdapter.ImageItem>
     @Override
     public void onBindViewHolder(@NonNull ImageItem holder, @SuppressLint("RecyclerView") int position) {
         String item = datas.get(position);
-        CacheUtils.getInstance().load(holder.image.getContext(), item, holder.image);
+
         //只刷新选中图标
         if (selectPosition == position) {
             holder.select.setImageResource(R.drawable.ic_select);
@@ -68,6 +67,19 @@ public class SelectAdapter extends RecyclerView.Adapter<SelectAdapter.ImageItem>
                 notifyItemChanged(selectPosition, item);
             }
         });
+
+        holder.image.setTag(item);
+        CacheUtils.getInstance().load(item,it->{
+            holder.image.post(()->{
+                if (it == null || holder.image.getTag() != it.getKey()){
+                    holder.image.setImageResource(R.mipmap.test);
+                }else {
+                    holder.image.setImageBitmap(it.getBitmap());
+                }
+            });
+
+            return false;
+        });
     }
 
     @RequiresApi(api = Build.VERSION_CODES.N)
@@ -85,6 +97,11 @@ public class SelectAdapter extends RecyclerView.Adapter<SelectAdapter.ImageItem>
             holder.select.setImageResource(R.drawable.ic_unselect);
         }
     }
+
+//    @Override
+//    public int getItemViewType(int position) {
+//        return position;
+//    }
 
     @Override
     public int getItemCount() {

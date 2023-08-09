@@ -1,27 +1,27 @@
-package com.tours.sawpuzzle.utils;
+package com.tours.sawpuzzle.utils.cache;
 
 import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.os.Build;
 import android.os.Environment;
 import android.text.TextUtils;
 import android.util.Log;
 import android.util.Patterns;
-import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.collection.LruCache;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
+import com.tours.sawpuzzle.monitor.Monitor;
+
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.ObjectStreamException;
-import java.io.OutputStream;
 import java.io.Serializable;
 import java.lang.ref.SoftReference;
 import java.net.HttpURLConnection;
@@ -129,7 +129,7 @@ public class CacheUtils implements Serializable {
     private final long max = Runtime.getRuntime().maxMemory() / 8;
 
     private final HashMap<String, SoftReference<Bitmap>> lruMap = new HashMap<>();
-    private final LruCache<String, Bitmap> lruCache = new LruCache<String, Bitmap>((int) 50 * 1024 * 1024) {
+    private final LruCache<String, Bitmap> lruCache = new LruCache<String, Bitmap>((int) max) {
         @Override
         protected int sizeOf(@NonNull String key, @NonNull Bitmap value) {
             return value.getAllocationByteCount();
@@ -141,7 +141,6 @@ public class CacheUtils implements Serializable {
             //从内存中移除时保存到本地内存
             if (newValue != null) {
                 saveLocalBitmap(key, newValue);
-                return;
             }
         }
     };
@@ -163,11 +162,12 @@ public class CacheUtils implements Serializable {
         if (key == null || TextUtils.isEmpty(key) || bitmap == null || mContext == null) {
             return;
         }
-        checkMkdirs(getCachePath(mContext));
+        checkFile(getCachePath(mContext), key);
         String filePath = getCachePath(mContext) + key;
         try {
-            OutputStream os = new FileOutputStream(filePath);
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 100, os);
+            FileOutputStream os = new FileOutputStream(filePath);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 90, os);
+            os.flush();
             os.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -181,9 +181,9 @@ public class CacheUtils implements Serializable {
         }
         String filePath = getCachePath(mContext) + key;
         try {
-            Bitmap bitmap = BitmapFactory.decodeStream(new FileInputStream(new File(filePath)));
-            return bitmap;
+            return BitmapFactory.decodeStream(new FileInputStream(new File(filePath)));
         } catch (Exception e) {
+            e.printStackTrace();
         }
         return null;
     }
@@ -225,69 +225,30 @@ public class CacheUtils implements Serializable {
         this.mContext = application;
     }
 
-    public void destroy(){
-        if(mExecutorService == null) {
+    public void destroy() {
+        if (mExecutorService == null) {
             return;
         }
         mExecutorService.shutdown();
         mExecutorService = null;
     }
 
-    public void load(Context context, int resources, ImageView imageView) {
-        if (mContext == null) {
-            mContext = context.getApplicationContext();
-        }
+    public void load(String path, Monitor<CacheData> result) {
         initThreadPool();
         mExecutorService.execute(new BasePriorityRunnable(System.currentTimeMillis()) {
             @Override
             public void run() {
-                try {
-                    show(context, imageView, BitmapFactory.decodeResource(context.getResources(), resources));
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                loadBitmap(path, result);
             }
         });
     }
 
-    public void load(Context context, String resources, ImageView imageView) {
-        if (mContext == null) {
-            mContext = context.getApplicationContext();
-        }
-        initThreadPool();
-        switch (assessType(resources)) {
-            case LOCAL_TYPE:
-                mExecutorService.execute(new BasePriorityRunnable(System.currentTimeMillis()) {
-                    @Override
-                    public void run() {
-                        try {
-                            show(context, imageView, BitmapFactory.decodeStream(new FileInputStream(new File(resources))));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-                break;
-            case NETWORK_TYPE:
-                mExecutorService.execute(new BasePriorityRunnable(System.currentTimeMillis()) {
-                    @Override
-                    public void run() {
-                        cacheLoading(context, resources, imageView);
-                    }
-                });
-                break;
-            default:
-                break;
-        }
-    }
-
-    private void cacheLoading(Context context, String url, ImageView imageView) {
-        String key = md5(url);
-
+    private void loadBitmap(String path, Monitor<CacheData> result) {
+        String key = md5(path);
         //从缓存拿
         Bitmap cacheBitmap = getLru(key);
         if (cacheBitmap != null) {
-            show(context, imageView, cacheBitmap);
+            result.run(new CacheData(path, cacheBitmap));
             return;
         }
 
@@ -295,24 +256,24 @@ public class CacheUtils implements Serializable {
         Bitmap localBitmap = getLocalBitmap(key);
         if (localBitmap != null) {
             setLru(key, localBitmap);
-            show(context, imageView, localBitmap);
+            result.run(new CacheData(path, localBitmap));
             return;
         }
 
-        //从网络下载
-        Bitmap netWorkBitmap = downloadBitmap(url);
-        if (netWorkBitmap != null) {
-            setLru(key, netWorkBitmap);
-            show(context, imageView, netWorkBitmap);
-            return;
+        Bitmap bitmap = null;
+        if (assessType(path) == NETWORK_TYPE) {
+            bitmap = downloadBitmap(path);
+        } else {
+            try {
+                bitmap = BitmapFactory.decodeStream(new FileInputStream(new File(path)));
+                bitmap = compressBitmap(bitmap);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
         }
-    }
-
-    private void show(Context context, ImageView imageView, Bitmap bitmap) {
-        if (context != null && imageView != null) {
-            imageView.post(() -> {
-                imageView.setImageBitmap(bitmap);
-            });
+        if (bitmap != null) {
+            setLru(key, bitmap);
+            result.run(new CacheData(path, bitmap));
         }
     }
 
@@ -324,23 +285,26 @@ public class CacheUtils implements Serializable {
      * 获取缓存目录
      */
     private String getCachePath(Context context) {
-        String sdPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-        String secnodPath = "";
+        String path = "";
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.GINGERBREAD) {
             if (Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())
                     || !Environment.isExternalStorageRemovable()) {
-                secnodPath = context.getExternalCacheDir().getAbsolutePath();
+                path = context.getExternalCacheDir().getAbsolutePath();
             } else {
-                secnodPath = context.getCacheDir().getAbsolutePath();
+                path = context.getCacheDir().getAbsolutePath();
             }
         }
-        return sdPath + secnodPath + File.separator + "bitmap" + File.separator;
+        return File.separator + path + File.separator + "bitmap" + File.separator;
     }
 
-    private void checkMkdirs(String path) {
-        File file = new File(path);
-        if (!file.exists() && !file.isDirectory()) {
-            file.mkdirs();
+    private void checkFile(String parent, String path) {
+        File parentDocument = new File(parent);
+        if (!parentDocument.exists() || !parentDocument.isDirectory()) {
+            parentDocument.mkdirs();
+        }
+        File file = new File(parent + path);
+        if (file.isFile() && file.exists()) {
+            file.delete();
         }
     }
 
@@ -377,30 +341,14 @@ public class CacheUtils implements Serializable {
         return "";
     }
 
-    /**
-     * 图片允许的最大空间,单位kb
-     */
-    private static final int MAX_SIZE = 200;
 
     /**
      * 压缩图片
-     * 质量压缩
      */
-    private Bitmap compressBitmap(Bitmap bitmap) {
-        //压缩到指定大小
-        ByteArrayOutputStream bao = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bao);
-        int options = 90;
-        while (bao.toByteArray().length / 1024 > MAX_SIZE) {
-            if (options < 10) {
-                break;
-            }
-            bao.reset();
-            bitmap.compress(Bitmap.CompressFormat.JPEG, options, bao);
-            options -= 10;
-        }
-        ByteArrayInputStream isBm = new ByteArrayInputStream(bao.toByteArray());
-        // 把压缩后的数据baos存放到ByteArrayInputStream中
-        return BitmapFactory.decodeStream(isBm, null, null);
+    public Bitmap compressBitmap(Bitmap bitmap) {
+        Matrix matrix = new Matrix();
+        matrix.setScale(0.5f, 0.5f);
+        return Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
     }
+
 }

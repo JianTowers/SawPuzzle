@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.tours.sawpuzzle.R;
 import com.tours.sawpuzzle.data.ImageBlock;
 import com.tours.sawpuzzle.databinding.ActivityMainBinding;
+import com.tours.sawpuzzle.ui.widget.GridDecoration;
 import com.tours.sawpuzzle.utils.ImageUtils;
 
 import java.util.ArrayList;
@@ -45,14 +46,7 @@ public class MainActivity extends AppCompatActivity implements ImageListener {
         imageAdapter = new ImageAdapter(this);
         binding.recycler.setLayoutManager(new GridLayoutManager(this, SIDE));
         binding.recycler.setAdapter(imageAdapter);
-
-        binding.recycler.addItemDecoration(new RecyclerView.ItemDecoration() {
-            @Override
-            public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent, @NonNull RecyclerView.State state) {
-                super.getItemOffsets(outRect, view, parent, state);
-                outRect.set(2, 2, 2, 2);
-            }
-        });
+        binding.recycler.addItemDecoration(new GridDecoration(2));
     }
 
     private void updateAdapter(String path) {

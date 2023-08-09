@@ -18,9 +18,11 @@ import androidx.recyclerview.widget.GridLayoutManager;
 
 import com.tours.sawpuzzle.R;
 import com.tours.sawpuzzle.databinding.ActivitySelectBinding;
+import com.tours.sawpuzzle.ui.crop.CropActivity;
 import com.tours.sawpuzzle.ui.main.MainActivity;
 import com.tours.sawpuzzle.ui.widget.GridDecoration;
 import com.tours.sawpuzzle.utils.PermissionsUtils;
+import com.tours.sawpuzzle.utils.cache.CacheUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -71,7 +73,7 @@ public class SelectActivity extends AppCompatActivity {
             Bitmap bm = BitmapFactory.decodeFile(location);
             //获取图片的详细信息
             list.add(location);
-            if (list.size() > 50) {
+            if (list.size() > 100) {
                 break;
             }
         }
@@ -89,6 +91,7 @@ public class SelectActivity extends AppCompatActivity {
         binding.recycler.setLayoutManager(new GridLayoutManager(this, 3));
         binding.recycler.setAdapter(selectAdapter);
         binding.recycler.addItemDecoration(new GridDecoration(5));
+        binding.recycler.setItemAnimator(null);
     }
 
 
@@ -102,5 +105,11 @@ public class SelectActivity extends AppCompatActivity {
                 new Thread(this::addImage).start();
             }
         }));
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        CacheUtils.getInstance().destroy();
     }
 }

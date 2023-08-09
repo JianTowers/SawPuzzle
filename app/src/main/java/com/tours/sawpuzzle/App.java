@@ -2,7 +2,7 @@ package com.tours.sawpuzzle;
 
 import android.app.Application;
 
-import com.tours.sawpuzzle.utils.CacheUtils;
+import com.tours.sawpuzzle.utils.cache.CacheUtils;
 
 /**
  * @Description: TODO
