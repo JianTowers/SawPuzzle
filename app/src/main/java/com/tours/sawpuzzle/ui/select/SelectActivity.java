@@ -73,7 +73,7 @@ public class SelectActivity extends AppCompatActivity {
             Bitmap bm = BitmapFactory.decodeFile(location);
             //获取图片的详细信息
             list.add(location);
-            if (list.size() > 100) {
+            if (list.size() > 50) {
                 break;
             }
         }

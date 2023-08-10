@@ -98,10 +98,10 @@ public class SelectAdapter extends RecyclerView.Adapter<SelectAdapter.ImageItem>
         }
     }
 
-//    @Override
-//    public int getItemViewType(int position) {
-//        return position;
-//    }
+    @Override
+    public int getItemViewType(int position) {
+        return position;
+    }
 
     @Override
     public int getItemCount() {
